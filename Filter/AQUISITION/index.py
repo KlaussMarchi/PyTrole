@@ -14,22 +14,8 @@ def getValue():
         return None
 
 
-def getPort():
-    ports  = [port for port in serial.tools.list_ports.comports()]
-
-    target = 0
-
-    for i, port in enumerate(ports):
-        if 'usb' in str(port).lower():
-            target = i
-
-    selected = str(ports[target]).split(' ')[0].strip()
-    return selected
-
-
-PATH   = 'Analysis/files/test_9.csv'
-port   = getPort()
-device = serial.Serial(port, 115200, timeout=10)
+path   = 'ANALYSIS/DataBase.csv'
+device = serial.Serial('COM5', 9600, timeout=10)
 list   = []
 
 print('conectado!')
@@ -38,20 +24,18 @@ sleep(2)
 device.write('start\r\n'.encode())
 print('aguarde...')
 
+
 while True:
-    values  = getValue()
-    blowing = keyboard.is_pressed('space')
+    values = getValue()
     
     if keyboard.is_pressed('enter'):
         break
 
     if values is None:
         continue
-        
-    values['blowing'] = blowing
+    
     list.append(values)
     print(values)
 
-
 df = pd.DataFrame(list)
-df.to_csv(PATH, index=False)
+df.to_csv(path, index=False)
