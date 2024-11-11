@@ -3,12 +3,11 @@
 
 float getInput(){
     int analog = analogRead(SENSOR_PIN);
-    return mapFloat(analog, 0, 1024, 0, 100);
+    return analog;
 }
 
-void setOutput(float output){
-    int step = mapFloat(output, 0, 100, 0, 255);
-    analogWrite(ACTUATOR_PIN, step);
+void setOutput(int output){
+    analogWrite(ACTUATOR_PIN, output);
 }
 
 double compute(double inputValue, double setpoint){
@@ -20,7 +19,6 @@ double compute(double inputValue, double setpoint){
 
     if(Y_n < 0)   Y_n = 0;
     if(Y_n > 100) Y_n = 100;
-    
     X_n2 = X_n1;
     X_n1 = X_n; 
     Y_n2 = Y_n1;
@@ -46,44 +44,16 @@ void loop() {
         return;
     
     startTime = millis();
+    float setpoint = 10; 
 
-    float setpoint = 50;            // ESCALA 0 - 100
-    float input    = getInput();    // SENSOR
-
+    float input  = getInput(); 
     float output = compute(input, setpoint);
-    setOutput(output);              // ATUADOR
+
+    setOutput(output); 
     plot(input, output, setpoint);
 }
 
-float mapFloat(float x, float Xo, float X, float Yo, float Y){
-    float minVal = min(Yo, Y);
-    float maxVal = max(Yo, Y);
-    float func = (Y-Yo)/(X-Xo)*(x-Xo)+Yo;
-
-    if(func < minVal)
-        return minVal;
-
-    if(func > maxVal)
-        return maxVal;
-
-    return func;
-}
-
-int mapInt(int x, int Xo, int X, int Yo, int Y){
-    int minVal = min(Yo, Y);
-    int maxVal = max(Yo, Y);
-    int func   = map(x, Xo, X, Yo, Y);
-
-    if(func < minVal)
-        return minVal;
-
-    if(func > maxVal)
-        return maxVal;
-
-    return func;
-}
-
-void plot(int input, int output, int setpoint){
+void plot(float input, float output, float setpoint){
     Serial.print(input);  
     Serial.print(",");
     Serial.print(output);
@@ -91,3 +61,4 @@ void plot(int input, int output, int setpoint){
     Serial.print(setpoint); 
     Serial.println(",0,100");
 }
+

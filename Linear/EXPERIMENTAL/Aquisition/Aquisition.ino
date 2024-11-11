@@ -3,7 +3,7 @@
 #define SENSOR_PIN   A0
 #define ACTUATOR_PIN 5
 
-int applyStep(){
+double applyStep(){
     static unsigned long startTime;
     static int step;
 
@@ -45,41 +45,11 @@ void loop(){
         return;
 
     attTime = millis();
-    float input  = applyStep();
-    float output = getOutput();
-
     data["time"]   = (millis() - startTime) / 1000.0;
-    data["input"]  = mapFloat(input, 0, 1024, 0, 100);
-    data["output"] = mapFloat(output, 100, 200, 0, 100);
-
+    data["input"]  = applyStep();
+    data["output"] = getOutput();
+    
     serializeJson(data, response);
     Serial.println(response);
 }
 
-float mapFloat(float x, float Xo, float X, float Yo, float Y){
-    float minVal = min(Yo, Y);
-    float maxVal = max(Yo, Y);
-    float func = (Y-Yo)/(X-Xo)*(x-Xo)+Yo;
-
-    if(func < minVal)
-        return minVal;
-
-    if(func > maxVal)
-        return maxVal;
-
-    return func;
-}
-
-int mapInt(int x, int Xo, int X, int Yo, int Y){
-    int minVal = min(Yo, Y);
-    int maxVal = max(Yo, Y);
-    int func   = map(x, Xo, X, Yo, Y);
-
-    if(func < minVal)
-        return minVal;
-
-    if(func > maxVal)
-        return maxVal;
-
-    return func;
-}
