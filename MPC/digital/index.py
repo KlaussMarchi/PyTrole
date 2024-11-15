@@ -135,7 +135,8 @@ def loop():
     if x0 is None:
         return
 
-    print(f'input: {x0[0]} | setpoint: {setpoint}')
+    print(f'input: {x0[0]}')
+    print(f'setpoint: {setpoint}')
     
     outputs = getOutputs()
     setOutputs(outputs)
