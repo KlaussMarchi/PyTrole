@@ -14,7 +14,7 @@ dt = 1  # Taxa de amostragem
 Xo = 0
 Ts = 1
 setpoint = 6
-bounds = [(-500, 500) for _ in range(M)]
+bounds   = [(-500, 500) for _ in range(M)]
 
 s = ctl.TransferFunction.s
 G = 1/(s**2 + 2*s)
@@ -131,6 +131,7 @@ def setup():
 def loop():
     global x0
     x0 = getInputs()
+    setpoint = 6
 
     if x0 is None:
         return
