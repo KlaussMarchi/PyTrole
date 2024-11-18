@@ -18,9 +18,6 @@ double compute(double input, double setpoint){
     double X_n = setpoint - input;
     double Y_n = 0.00212942176167763*X_n -0.002664690122474056*X_n1 - 0.0015464657755570599*X_n2 + 0.0026694083963456627*X_n3 - 0.000578237712266505*X_n4 + 3.949464543967902*Y_n1 - 5.852100723930363*Y_n2 + 3.8557349659892473*Y_n3-0.9530987860267869*Y_n4;
 
-    if(Y_n < 0) Y_n = 0;
-    if(Y_n > 5) Y_n = 5;
-
     X_n4 = X_n3;
     X_n3 = X_n2;
     X_n2 = X_n1;
@@ -30,6 +27,10 @@ double compute(double input, double setpoint){
     Y_n3 = Y_n2;
     Y_n2 = Y_n1;
     Y_n1 = Y_n;
+
+    if(Y_n < 0.0) Y_n = 0.0;
+    if(Y_n > 5.0) Y_n = 5.0;
+
     return Y_n;
 }
 
