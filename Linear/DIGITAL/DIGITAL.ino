@@ -11,27 +11,31 @@ void setOutput(float output){
     analogWrite(ACTUATOR_PIN, magnitude);
 }
 
-double compute(double input, double setpoint){
-    static double Y_n1, Y_n2, Y_n3, Y_n4;
-    static double X_n1, X_n2, X_n3, X_n4;
+
+float compute(float input, float setpoint){
+    static unsigned long startTime;
+    static const byte xSize=2, ySize=2;
+    static float bounds[2] = {-500, 500};
+    static float Xn[xSize] = {0};
+    static float Yn[ySize] = {0};
+
+    if(millis() - startTime < 100)
+        return Yn[0];
+
+    startTime = millis();
+
+    for(byte n=xSize-1; n>0; n--) 
+        Xn[n] = Xn[n-1];
     
-    double X_n = setpoint - input;
-    double Y_n = 0.00212942176167763*X_n -0.002664690122474056*X_n1 - 0.0015464657755570599*X_n2 + 0.0026694083963456627*X_n3 - 0.000578237712266505*X_n4 + 3.949464543967902*Y_n1 - 5.852100723930363*Y_n2 + 3.8557349659892473*Y_n3-0.9530987860267869*Y_n4;
+    for(byte n=ySize-1; n>0; n--) 
+        Yn[n] = Yn[n-1];
 
-    X_n4 = X_n3;
-    X_n3 = X_n2;
-    X_n2 = X_n1;
-    X_n1 = X_n; 
-
-    Y_n4 = Y_n3;
-    Y_n3 = Y_n2;
-    Y_n2 = Y_n1;
-    Y_n1 = Y_n;
-
-    if(Y_n < 0.0) Y_n = 0.0;
-    if(Y_n > 5.0) Y_n = 5.0;
-
-    return Y_n;
+    Xn[0] = (setpoint - input);
+    Yn[0] = Xn[0]*(19.863569) + Xn[1]*(-14.769406) + Yn[1]*(0.577497);
+    
+    if(Yn[0] > bounds[1]) Yn[0] = bounds[1];
+    if(Yn[0] < bounds[0]) Yn[0] = bounds[0];
+    return Yn[0];
 }
 
 void setup() {
@@ -46,22 +50,16 @@ void setup() {
 }
 
 void loop() {
-    static unsigned long startTime = millis();
-
-    if(millis() - startTime < 15)
-        return;
-    
-    startTime = millis();
-    float setpoint = 3; 
-
+    float setpoint = 3;
     float input  = getInput(); 
     float output = compute(input, setpoint);
 
     setOutput(output); 
-    plot(input, output, setpoint);
+    plotStates(input, output, setpoint);
+    delay(10);
 }
 
-void plot(float input, float output, float setpoint){
+void plotStates(float input, float output, float setpoint){
     Serial.print(input);  
     Serial.print(",");
     Serial.print(output);
