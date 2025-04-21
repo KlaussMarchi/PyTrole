@@ -11,30 +11,25 @@ void setOutput(float output){
     analogWrite(ACTUATOR_PIN, magnitude);
 }
 
-float compute(float input, float setpoint){
-    static unsigned long startTime;
-    static const byte xSize=2, ySize=2;
-    static float bounds[2] = {-500, 500};
-    static float Xn[xSize] = {0};
-    static float Yn[ySize] = {0};
+float control(const float input, const float setpoint){
+    static unsigned long startTime = millis();
+    static const float bounds[] = {-1e9, 1e9};
+    static const int dt = 50; // ms
+    static float Xn1, Xn2;
+    static float Yn1, Yn2;
 
-    if(millis() - startTime < 100)
-        return Yn[0];
+    if(millis() - startTime < dt)
+        return Yn1;
 
     startTime = millis();
+    const float Xn = (setpoint - input);
+    const float Yn = Xn*(0.004683) + Xn1*(0.004381) + Yn1*(1.818731) + Yn2*(-0.818731);
 
-    for(byte n=xSize-1; n>0; n--) 
-        Xn[n] = Xn[n-1];
-    
-    for(byte n=ySize-1; n>0; n--) 
-        Yn[n] = Yn[n-1];
-
-    Xn[0] = (setpoint - input);
-    Yn[0] = Xn[0]*(19.863569) + Xn[1]*(-14.769406) + Yn[1]*(0.577497);
-    
-    if(Yn[0] > bounds[1]) Yn[0] = bounds[1];
-    if(Yn[0] < bounds[0]) Yn[0] = bounds[0];
-    return Yn[0];
+    const float output = (Yn < bounds[0]) ? bounds[0] :
+                         (Yn > bounds[1]) ? bounds[1] : Yn;
+    Xn2 = Xn1; Xn1 = Xn;
+    Yn2 = Yn1; Yn1 = output;
+    return Yn;
 }
 
 void setup() {
@@ -51,7 +46,7 @@ void setup() {
 void loop() {
     float setpoint = 3;
     float input  = getInput(); 
-    float output = compute(input, setpoint);
+    float output = control(input, setpoint);
 
     setOutput(output); 
     plotStates(input, output, setpoint);
